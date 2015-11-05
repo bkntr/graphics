@@ -9,8 +9,14 @@ float Circle::distance_to_wall()
     return glm::min(1 - abs(_position.x), 1 - abs(_position.y));
 }
 
-Circle::Circle(const Circle& other) : Circle(other._position.x, other._position.y, DEFAULT_RADIUS)
+Circle::Circle(const Circle& other)
 {
+    _vao = other._vao;
+    _vbo = other._vbo;
+    _left = other._left;
+    _right = other._right;
+    _bottom = other._bottom;
+    _top = other._top;
     _vertices = other._vertices;
     _radius = other._radius;
     _direction = other._direction;
@@ -23,7 +29,8 @@ Circle::Circle(Circle&& other) : _vao(0), _vbo(0)
     swap(*this, other);
 }
 
-Circle::Circle(float x, float y, float r) :
+Circle::Circle(float x, float y, float r, float left, float right, float bottom, float top) :
+    _left(left), _right(right), _bottom(bottom), _top(top), 
     _position(x, y, 0), _vao(0), _vbo(0), _radius(r)
 {
     // Set uniform variable with RGB values:
@@ -40,11 +47,12 @@ Circle::Circle(float x, float y, float r) :
         float x = _radius * glm::cos(alpha);
         float y = _radius * glm::sin(alpha);
         _vertices.push_back(glm::vec4(x, y, 0.0f, 1.0f));
-        _vertices.push_back(_color/2.f);
+        _vertices.push_back(_color);
     }
 
     // Choose a random initial direction
-    float random_angle = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) * 2 * glm::pi<float>();
+    float random_angle = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) *
+        2 * glm::pi<float>();
     _direction.x = glm::sin(random_angle);
     _direction.y = glm::cos(random_angle);
 
@@ -59,9 +67,13 @@ Circle::Circle(float x, float y, float r) :
         // Create and load vertex data into a Vertex Buffer Object:
         glGenBuffers(1, &_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(glm::vec4) * _vertices.size(),
+            &_vertices[0],
+            GL_STATIC_DRAW);
 
-        // Tells OpenGL that there is vertex data in this buffer object and what form that vertex data takes:
+        // Tells OpenGL that there is vertex data in this buffer object and what form that vertex
+        // data takes:
 
         // Obtain attribute handles:
         GLint posAttrib = glGetAttribLocation(program, "position");
@@ -107,34 +119,42 @@ void Circle::draw(const Circle* closest_circle)
     GLuint program = programManager::sharedInstance().programWithID("default");
     glUseProgram(program);
 
-    glUniform4f(glGetUniformLocation(program, "fillColor"), _color.r, _color.g, _color.b, _color.a);
+    glUniform4f(glGetUniformLocation(program, "fillColor"),
+        _color.r, _color.g, _color.b, _color.a);
 
     GLenum polygonMode = GL_FILL;
     glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 
     _position += _direction*(1.f / 50.f);
-    glm::mat4 model_mat;
+    glm::mat4 model_mat = glm::ortho(_left, _right, _bottom, _top);
     model_mat = glm::translate(model_mat, _position);
+    float current_radius = _radius;
     // If colliding with other circle, shrink
     if (closest_circle) {
         float distance = glm::distance(_position, closest_circle->position());
         float collision_distance = _radius + closest_circle->radius();
         if (distance < collision_distance) {
-            float new_radius = _radius - (collision_distance - distance) / 2;
-            float scale = new_radius / _radius;
+            // Length of overlap between circles.
+            float overlap = collision_distance - distance;
+            // Relative length to be decreased from this circle.
+            float weight = _radius / (_radius + closest_circle->radius());
+            current_radius = _radius - overlap * weight;
+            float scale = current_radius / _radius;
             model_mat = glm::scale(model_mat, glm::vec3(scale, scale, 1.f));
         }
     }
 
     glUniformMatrix4fv(glGetUniformLocation(program, "transform"), 1, GL_FALSE, glm::value_ptr(model_mat));
+    glUniform4f(glGetUniformLocation(program, "light"), 1.0f, 1.0f, 0.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(program, "radius"), current_radius);
 
     // Change direction on wall collision
-    if (_position.x + _radius >= 1.f && _direction.x > 0 ||
-            _position.x - _radius <= -1.f && _direction.x < 0) {
+    if (_position.x + current_radius >= _right && _direction.x > 0 ||
+            _position.x - current_radius <= _left && _direction.x < 0) {
         _direction.x = -_direction.x;
     }
-    if (_position.y + _radius >= 1.f && _direction.y > 0 ||
-            _position.y - _radius <= -1.f && _direction.y < 0) {
+    if (_position.y + current_radius >= _top && _direction.y > 0 ||
+            _position.y - current_radius <= _bottom && _direction.y < 0) {
         _direction.y = -_direction.y;
     }
 
@@ -149,6 +169,14 @@ void Circle::draw(const Circle* closest_circle)
 
     // Cleanup, not strictly necessary
     glUseProgram(0);
+}
+
+void Circle::resize(float left, float right, float bottom, float top)
+{
+    _left = left;
+    _right = right;
+    _bottom = bottom;
+    _top = top;
 }
 
 Circle::~Circle()

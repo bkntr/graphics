@@ -25,6 +25,7 @@ class Model {
 
     // View port frame:
     float _width, _height, _offsetX, _offsetY;
+    float _left, _right, _bottom, _top;
 
 public:
     Model();
