@@ -177,6 +177,11 @@ void Circle::resize(float left, float right, float bottom, float top)
     _right = right;
     _bottom = bottom;
     _top = top;
+
+    _position.x = glm::max(_position.x, _left);
+    _position.x = glm::min(_position.x, _right);
+    _position.y = glm::max(_position.y, _bottom);
+    _position.y = glm::min(_position.y, _top);
 }
 
 Circle::~Circle()
