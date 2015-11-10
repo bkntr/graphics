@@ -4,15 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-float Circle::distance_to_wall()
-{
-    return glm::min(1 - abs(_position.x), 1 - abs(_position.y));
-}
-
-Circle::Circle(const Circle& other)
+Circle::Circle(Circle& other)
 {
     _vao = other._vao;
+    other._vao = 0;
     _vbo = other._vbo;
+    other._vbo = 0;
     _left = other._left;
     _right = other._right;
     _bottom = other._bottom;
@@ -30,8 +27,8 @@ Circle::Circle(Circle&& other) : _vao(0), _vbo(0)
 }
 
 Circle::Circle(float x, float y, float r, float left, float right, float bottom, float top) :
-    _left(left), _right(right), _bottom(bottom), _top(top), 
-    _position(x, y, 0), _vao(0), _vbo(0), _radius(r)
+    _vao(0), _vbo(0), _left(left), _right(right), _bottom(bottom), _top(top), 
+    _radius(r), _position(x, y, 0)
 {
     // Set uniform variable with RGB values:
     _color.r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -149,12 +146,12 @@ void Circle::draw(const Circle* closest_circle)
     glUniform1f(glGetUniformLocation(program, "radius"), current_radius);
 
     // Change direction on wall collision
-    if (_position.x + current_radius >= _right && _direction.x > 0 ||
-            _position.x - current_radius <= _left && _direction.x < 0) {
+    if ((_position.x + current_radius >= _right && _direction.x > 0) ||
+            (_position.x - current_radius <= _left && _direction.x < 0)) {
         _direction.x = -_direction.x;
     }
-    if (_position.y + current_radius >= _top && _direction.y > 0 ||
-            _position.y - current_radius <= _bottom && _direction.y < 0) {
+    if ((_position.y + current_radius >= _top && _direction.y > 0) ||
+            (_position.y - current_radius <= _bottom && _direction.y < 0)) {
         _direction.y = -_direction.y;
     }
 

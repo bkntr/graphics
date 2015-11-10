@@ -21,6 +21,8 @@
 #include "Circle.h"
 
 class Model {
+    GLuint _vao;
+    
     std::vector<Circle> _circles;
 
     // View port frame:

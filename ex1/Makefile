@@ -15,6 +15,7 @@ EXEC =
 SRCS	=  	ex0.cpp		\
 		Model.cpp 	\
 		ShaderIO.cpp	\
+		Circle.cpp	\
 			
 # compiler 
 CC	= g++
@@ -32,7 +33,8 @@ ifdef DBG
 		-DDEBUG	\
 		-O0		\
 		-g3		\
-		-Wno-deprecated
+		-Wno-deprecated	\
+		-std=c++11
 					
 						
 else
@@ -40,7 +42,8 @@ else
 	CFLAGS = 		\
 		-Wall		\
 		-DNDEBUG    \
-		-O2
+		-O2			\
+		-std=c++11
 				 
 endif
 
@@ -51,7 +54,7 @@ LDFLAGS	=
 
 
 # the name of the lib to create 
-APP = ex0
+APP = ex1
 
 # each lib should add with -l flag
 LIBS =  -L/usr/lib -lm -lGLEW -lglut -lGL -lGLU -ldl -L/usr/X11R6/lib

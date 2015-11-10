@@ -34,14 +34,11 @@ void Model::init()
         SHADERS_DIR "SimpleShader.vert",
         SHADERS_DIR "SimpleShader.frag");
 
-    GLuint program = programManager::sharedInstance().programWithID("default");
-
     _circles.emplace_back(0.f, 0.f, DEFAULT_RADIUS, _left, _right, _bottom, _top);
 }
 
 void Model::add_circle(int x, int y)
 {
-    float aspect_ratio = _width / _height;
     float screen_x = (float)x / _width * (_right-_left) - _right;
     float screen_y = ((float)y / _height * (_top-_bottom) - _top) * -1;
     glm::vec3 new_position(screen_x, screen_y, 0.0f);
@@ -96,18 +93,10 @@ void Model::resize(int width, int height)
 
     float aspect_ratio = _width / _height;
 
-    //if (aspect_ratio >= 1.f) {
-        _left = -1.f * aspect_ratio;
-        _right = 1.f * aspect_ratio;
-        _bottom = -1.f;
-        _top = 1.f;
-    /*}
-    else {
-        _left = -1.f;
-        _right = 1.f;
-        _bottom = -1.f / aspect_ratio;
-        _top = 1.f / aspect_ratio;
-    }*/
+    _left = -1.f * aspect_ratio;
+    _right = 1.f * aspect_ratio;
+    _bottom = -1.f;
+    _top = 1.f;
 
     for (Circle& circle : _circles) {
         circle.resize(_left, _right, _bottom, _top);
@@ -116,5 +105,5 @@ void Model::resize(int width, int height)
 
 float Model::distance_to_wall(float x, float y)
 {
-    return glm::min(_right - abs(x), _top - abs(y));
+    return glm::min(_right - fabs(x), _top - fabs(y));
 }

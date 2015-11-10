@@ -26,10 +26,8 @@ class Circle
     glm::vec3 _position;
     glm::vec4 _color;
 
-    float distance_to_wall();
-
 public:
-    Circle(const Circle & other);
+    Circle(Circle & other);
     Circle(Circle && other);
     Circle(float x, float y, float r, float left, float right, float bottom, float top);
 
