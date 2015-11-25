@@ -66,8 +66,8 @@ void Model::init(char* mesh_path)
 
     // Add all triangles to elements vector
     for (auto f_it = _mesh.faces_begin(); f_it != _mesh.faces_end(); ++f_it) {
-        for (auto fv_it = _mesh.fv_iter(*f_it); fv_it.is_valid(); ++fv_it) {
-            elements.push_back(fv_it->idx());
+        for (auto fv_it = _mesh.fv_iter(f_it.handle()); fv_it; ++fv_it) {
+            elements.push_back(fv_it.handle().idx());
         }
     }
 
@@ -343,7 +343,7 @@ void Model::update_rotation(int x, int y)
         glm::vec3 normal = glm::cross(_rotation_begin, rotation_end);
         _rotation_addition = glm::rotate(glm::mat4(),
             glm::acos(glm::dot(_rotation_begin, rotation_end)) * 2,
-            glm::cross(_rotation_begin, rotation_end));
+            normal);
     }
 }
 
