@@ -162,7 +162,7 @@ object. The bounding box is represented by the lower left and upper right corner
 void Model::compute_bounding_box()
 {
     _lower_left = Mesh::Point(std::numeric_limits<float>::max());
-    _upper_right = Mesh::Point(std::numeric_limits<float>::min());
+    _upper_right = Mesh::Point(-std::numeric_limits<float>::max());
 
     // This is how to go over all the vertices in the mesh:
     for (Mesh::VertexIter vertexIter = _mesh.vertices_begin(); vertexIter != _mesh.vertices_end(); ++vertexIter) {
@@ -240,9 +240,6 @@ void Model::draw()
             -100.f, 100.f);
     }
 
-    // scale
-    float scale_base = 2.f / glm::max(glm::max(_mesh_width, _mesh_height), _mesh_depth);
-    modelview = glm::scale(modelview, glm::vec3(scale_base));
     // rotation
     modelview *= _rotation_addition;
     // translation
@@ -317,7 +314,8 @@ void Model::update_translation(int x, int y)
 {
     if (_translation_active) {
         glm::vec3 translate_end = to_world(x, y);
-        _translation_addition = glm::translate(glm::mat4(), (translate_end - _translation_begin) / 8);
+        _translation_addition =
+            glm::translate(glm::mat4(), (translate_end - _translation_begin) * 1.5f);
     }
 }
 
@@ -384,5 +382,8 @@ void Model::toggle_projection_mode() {
 void Model::reset() {
     _perspective = true;
     _zoom_factor = 1;
-    _modelview = glm::translate(glm::mat4(), glm::vec3(-_center[0], -_center[1], -_center[2]));
+
+    float scale = 2.f / glm::max(glm::max(_mesh_width, _mesh_height), _mesh_depth);
+    _modelview = glm::scale(glm::mat4(), glm::vec3(scale));
+    _modelview = glm::translate(_modelview, glm::vec3(-_center[0], -_center[1], -_center[2]));
 }
