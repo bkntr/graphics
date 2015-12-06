@@ -2,7 +2,9 @@
 304865090 benk
 
 implementation:
-	We changed the array buffer passed to GPU to contain position, vertex normal (average of face normals connected to vertex) and face normal (each vertex is multiplied by the number of faces its connected to).
+	We changed the array buffer passed to GPU to contain position, vertex normal (average of face
+	normals connected to vertex) and face normal (each vertex is multiplied by the number of faces
+	its connected to).
 
 	We created 4 shaders:
 		- ColorShader implements the coloring from previous exercise.
@@ -14,8 +16,8 @@ implementation:
 
 files:
 	ex2.cpp:							project main, almost identical to exercise template.
-	Model.cpp:							contains all model logic, including loading, drawing, rotation,
-										translation, etc.
+	Model.cpp:							contains all model logic, including loading, drawing,
+										rotation, translation, etc.
 	ShaderIO.cpp:						nothing changed.
 	shaders/SimpleShader.{vert,frag}:	naive shader for the arcball circle.
 	shaders/ColorShader.{vert,frag}:	color by pixel position, from previous exercise.

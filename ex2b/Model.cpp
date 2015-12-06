@@ -78,16 +78,19 @@ void Model::init(char* mesh_path)
 
     // Add all vertices to vector
     for (auto f_it = _mesh.faces_begin(); f_it != _mesh.faces_end(); ++f_it) {
-        for (auto fv_it = _mesh.fv_ccwiter(f_it.handle()); fv_it.is_valid(); ++fv_it) {
-            const Mesh::Point& p = _mesh.point(*fv_it);
-            const Mesh::Point& vertex_normal = _mesh.normal(*fv_it);
-            const Mesh::Point& face_normal = _mesh.normal(*f_it);
+        for (auto fv_it = _mesh.fv_iter(f_it.handle()); fv_it; ++fv_it) {
+            const Mesh::Point& p = _mesh.point(fv_it);
+            const Mesh::Point& vertex_normal = _mesh.normal(fv_it);
+            const Mesh::Point& face_normal = _mesh.normal(f_it);
 
             vertices.push_back(glm::vec3(p[0], p[1], p[2]));
             vertices.push_back(glm::vec3(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
             vertices.push_back(glm::vec3(face_normal[0], face_normal[1], face_normal[2]));
         }
     }
+
+    _mesh.release_vertex_normals();
+    _mesh.release_face_normals();
 
     // Create circle vertices
     for (int i = 0; i < 360; i++) {
@@ -100,7 +103,7 @@ void Model::init(char* mesh_path)
     // Initialize vertices buffer and transfer it to OpenGL
     {
         GLuint program = programManager::sharedInstance().programWithID(PHONG_ID);
-        GLuint vbo, ebo;
+        GLuint vbo;
 
         // Create and bind the Mesh Vertex Array Object
         glGenVertexArrays(1, &_mesh_vao);
@@ -276,7 +279,7 @@ void Model::draw_mesh(glm::mat4 model, glm::mat4 user, glm::mat4 view, glm::mat4
             GL_FALSE,
             glm::value_ptr(projection));
         glUniform1f(glGetUniformLocation(program, "specExp"), _spec_exp);
-        glUniform1d(glGetUniformLocation(program, "normalPerVertex"), _normal_per_vertex);
+        glUniform1i(glGetUniformLocation(program, "normalPerVertex"), _normal_per_vertex);
     }
 
     glDrawArrays(GL_TRIANGLES, 0, _mesh.n_faces() * 3);

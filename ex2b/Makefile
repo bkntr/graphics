@@ -59,7 +59,7 @@ LDFLAGS	=
 
 
 # the name of the lib to create 
-APP = ex2
+APP = ex2b
 
 # each lib should add with -l flag
 LIBS =  -L/usr/lib -lm -lGLEW -lglut -lGL -lGLU -ldl -L/usr/X11R6/lib $(OM_LIBS)
